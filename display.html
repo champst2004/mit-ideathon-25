@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker Stats</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #007acc; color: white; }
+        button { margin-top: 20px; padding: 10px; background: #007acc; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Daily Time Logs</h2>
+    <table id="timeTable">
+        <tr><th>Date</th><th>Language</th><th>Time Spent</th></tr>
+    </table>
+    <button id="exportBtn">Export JSON</button>
+    
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        window.addEventListener('message', event => {
+            if (event.data.command === "updateData") {
+                const timeTracker = event.data.data;
+                let tableContent = "<tr><th>Date</th><th>Language</th><th>Time Spent</th></tr>";
+
+                Object.keys(timeTracker).forEach(date => {
+                    Object.keys(timeTracker[date]).forEach(lang => {
+                        tableContent += `<tr><td>${date}</td><td>${lang}</td><td>${Math.round(timeTracker[date][lang])} sec</td></tr>`;
+                    });
+                });
+
+                document.getElementById("timeTable").innerHTML = tableContent;
+            }
+        });
+
+        // Request data from VS Code
+        vscode.postMessage({ command: "requestData" });
+
+        // Export JSON data
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            vscode.postMessage({ command: 'export' });
+        });
+    </script>
+</body>
+</html>
